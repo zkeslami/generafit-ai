@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -11,21 +12,62 @@ interface GoalSetupModalProps {
   onComplete: () => void;
 }
 
-const GOALS = [
-  { value: "lose_weight", label: "Lose Weight", emoji: "🎯" },
-  { value: "build_muscle", label: "Build Muscle", emoji: "💪" },
-  { value: "improve_endurance", label: "Improve Endurance", emoji: "🏃" },
-  { value: "increase_flexibility", label: "Increase Flexibility", emoji: "🧘" },
-  { value: "general_fitness", label: "General Fitness", emoji: "⚡" },
+const GOAL_CATEGORIES = [
+  {
+    value: "athletic_performance",
+    label: "Athletic Performance",
+    emoji: "🏀",
+    examples: ["Dunk a basketball", "Improve vertical jump 6 inches", "Run faster 40-yard dash"],
+  },
+  {
+    value: "endurance",
+    label: "Endurance",
+    emoji: "🏃",
+    examples: ["Run a sub 3-hour marathon", "Complete a 5K", "Finish a triathlon"],
+  },
+  {
+    value: "strength",
+    label: "Strength",
+    emoji: "💪",
+    examples: ["Bench press 225 lbs", "Do 10 pull-ups", "Deadlift 2x bodyweight"],
+  },
+  {
+    value: "flexibility",
+    label: "Flexibility & Wellness",
+    emoji: "🧘",
+    examples: ["Touch my toes", "Do the splits", "Hold a handstand"],
+  },
+  {
+    value: "body_composition",
+    label: "Body Composition",
+    emoji: "🎯",
+    examples: ["Lose 20 pounds", "Get visible abs", "Gain 10 lbs muscle"],
+  },
+  {
+    value: "general_fitness",
+    label: "General Fitness",
+    emoji: "⚡",
+    examples: ["Feel more energetic", "Build healthy habits", "Get in shape"],
+  },
 ];
 
 export const GoalSetupModal = ({ open, onComplete }: GoalSetupModalProps) => {
-  const [selectedGoal, setSelectedGoal] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedExample, setSelectedExample] = useState("");
+  const [customGoal, setCustomGoal] = useState("");
   const [saving, setSaving] = useState(false);
 
+  const currentCategory = GOAL_CATEGORIES.find(c => c.value === selectedCategory);
+
   const handleSave = async () => {
-    if (!selectedGoal) {
-      toast.error("Please select a fitness goal");
+    if (!selectedCategory) {
+      toast.error("Please select a goal category");
+      return;
+    }
+
+    const finalGoal = customGoal || selectedExample;
+    if (!finalGoal) {
+      toast.error("Please select or enter a goal");
       return;
     }
 
@@ -36,9 +78,11 @@ export const GoalSetupModal = ({ open, onComplete }: GoalSetupModalProps) => {
 
       const { error } = await supabase
         .from("user_profiles")
-        .insert({ 
-          id: user.id, 
-          primary_goal: selectedGoal 
+        .insert({
+          id: user.id,
+          primary_goal: selectedCategory,
+          goal_category: selectedCategory,
+          custom_goal: finalGoal,
         });
 
       if (error) throw error;
@@ -55,31 +99,98 @@ export const GoalSetupModal = ({ open, onComplete }: GoalSetupModalProps) => {
 
   return (
     <Dialog open={open} onOpenChange={() => {}}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl">Welcome to Smart Fitness!</DialogTitle>
           <DialogDescription className="text-base">
-            Let's start by setting your primary fitness goal. This helps us personalize your workouts.
+            What's your fitness goal? This helps us create personalized workouts just for you.
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-4 py-4">
-          <RadioGroup value={selectedGoal} onValueChange={setSelectedGoal}>
-            {GOALS.map((goal) => (
-              <div key={goal.value} className="flex items-center space-x-3 p-3 rounded-lg hover:bg-secondary/50 transition-base cursor-pointer">
-                <RadioGroupItem value={goal.value} id={goal.value} />
-                <Label 
-                  htmlFor={goal.value} 
-                  className="flex items-center gap-3 cursor-pointer flex-1 text-base"
-                >
-                  <span className="text-2xl">{goal.emoji}</span>
-                  <span>{goal.label}</span>
-                </Label>
+
+        <div className="space-y-6 py-4">
+          {/* Category Selection */}
+          <div className="space-y-3">
+            <Label className="text-base font-semibold">Choose a category:</Label>
+            <RadioGroup value={selectedCategory} onValueChange={(val) => {
+              setSelectedCategory(val);
+              setSelectedExample("");
+              setCustomGoal("");
+            }}>
+              <div className="grid grid-cols-2 gap-2">
+                {GOAL_CATEGORIES.map((category) => (
+                  <div
+                    key={category.value}
+                    className={`flex items-center space-x-3 p-3 rounded-lg border transition-base cursor-pointer ${
+                      selectedCategory === category.value
+                        ? "border-primary bg-primary/10"
+                        : "border-border hover:bg-secondary/50"
+                    }`}
+                    onClick={() => {
+                      setSelectedCategory(category.value);
+                      setSelectedExample("");
+                      setCustomGoal("");
+                    }}
+                  >
+                    <RadioGroupItem value={category.value} id={category.value} />
+                    <Label
+                      htmlFor={category.value}
+                      className="flex items-center gap-2 cursor-pointer flex-1"
+                    >
+                      <span className="text-xl">{category.emoji}</span>
+                      <span className="text-sm">{category.label}</span>
+                    </Label>
+                  </div>
+                ))}
               </div>
-            ))}
-          </RadioGroup>
+            </RadioGroup>
+          </div>
+
+          {/* Example Goals */}
+          {currentCategory && (
+            <div className="space-y-3">
+              <Label className="text-base font-semibold">Select a goal or write your own:</Label>
+              <div className="space-y-2">
+                {currentCategory.examples.map((example) => (
+                  <div
+                    key={example}
+                    className={`p-3 rounded-lg border cursor-pointer transition-base ${
+                      selectedExample === example && !customGoal
+                        ? "border-primary bg-primary/10"
+                        : "border-border hover:bg-secondary/50"
+                    }`}
+                    onClick={() => {
+                      setSelectedExample(example);
+                      setCustomGoal("");
+                    }}
+                  >
+                    <span className="text-sm">{example}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Custom Goal Input */}
+              <div className="pt-2">
+                <Input
+                  value={customGoal}
+                  onChange={(e) => {
+                    setCustomGoal(e.target.value);
+                    if (e.target.value) setSelectedExample("");
+                  }}
+                  placeholder="Or type your own goal..."
+                  className="w-full"
+                />
+              </div>
+            </div>
+          )}
         </div>
-        <Button onClick={handleSave} disabled={saving || !selectedGoal} size="lg" className="w-full">
-          {saving ? "Saving..." : "Continue"}
+
+        <Button
+          onClick={handleSave}
+          disabled={saving || !selectedCategory || (!selectedExample && !customGoal)}
+          size="lg"
+          className="w-full"
+        >
+          {saving ? "Saving..." : "Set My Goal"}
         </Button>
       </DialogContent>
     </Dialog>

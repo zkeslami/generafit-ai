@@ -12,6 +12,7 @@ import { Sparkles, Loader2 } from "lucide-react";
 interface WorkoutGeneratorProps {
   onWorkoutGenerated: (workout: any) => void;
   userGoal?: string;
+  equipment?: string[];
 }
 
 const MUSCLE_GROUPS = [
@@ -27,7 +28,7 @@ const WORKOUT_TYPES = [
   "Circuit Training"
 ];
 
-export const WorkoutGenerator = ({ onWorkoutGenerated, userGoal }: WorkoutGeneratorProps) => {
+export const WorkoutGenerator = ({ onWorkoutGenerated, userGoal, equipment = [] }: WorkoutGeneratorProps) => {
   const [selectedMuscles, setSelectedMuscles] = useState<string[]>([]);
   const [workoutType, setWorkoutType] = useState("");
   const [duration, setDuration] = useState(30);
@@ -54,7 +55,8 @@ export const WorkoutGenerator = ({ onWorkoutGenerated, userGoal }: WorkoutGenera
           targetMuscles: selectedMuscles,
           workoutType,
           duration,
-          userGoal
+          userGoal,
+          equipment: equipment.length > 0 ? equipment : undefined,
         }
       });
 
@@ -83,6 +85,11 @@ export const WorkoutGenerator = ({ onWorkoutGenerated, userGoal }: WorkoutGenera
         </CardTitle>
         <CardDescription>
           Customize your workout based on your preferences
+          {equipment.length > 0 && (
+            <span className="block text-xs mt-1 text-primary">
+              Using {equipment.length} equipment items
+            </span>
+          )}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">

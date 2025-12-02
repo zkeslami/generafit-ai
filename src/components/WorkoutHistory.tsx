@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { WorkoutCard } from "./WorkoutCard";
 import { Card, CardContent } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 interface WorkoutHistoryProps {
   refreshTrigger?: number;
@@ -21,7 +22,7 @@ export const WorkoutHistory = ({ refreshTrigger }: WorkoutHistoryProps) => {
       .on(
         'postgres_changes',
         {
-          event: 'INSERT',
+          event: '*',
           schema: 'public',
           table: 'workouts'
         },
@@ -53,6 +54,23 @@ export const WorkoutHistory = ({ refreshTrigger }: WorkoutHistoryProps) => {
       console.error("Error fetching workouts:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDelete = async (workoutId: string) => {
+    try {
+      const { error } = await supabase
+        .from("workouts")
+        .delete()
+        .eq("id", workoutId);
+
+      if (error) throw error;
+      
+      toast.success("Workout deleted");
+      fetchWorkouts();
+    } catch (error) {
+      console.error("Error deleting workout:", error);
+      toast.error("Failed to delete workout");
     }
   };
 
@@ -88,6 +106,8 @@ export const WorkoutHistory = ({ refreshTrigger }: WorkoutHistoryProps) => {
             workout={workout} 
             showDate 
             date={workout.created_at}
+            onDelete={() => handleDelete(workout.id)}
+            editable={false}
           />
         ))}
       </div>
