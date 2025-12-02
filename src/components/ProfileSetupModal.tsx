@@ -26,7 +26,7 @@ export function ProfileSetupModal({ open, onOpenChange, onComplete, initialData 
   const [birthYear, setBirthYear] = useState("");
   const [gender, setGender] = useState("");
   const [saving, setSaving] = useState(false);
-  const [useImperial, setUseImperial] = useState(false);
+  const [useImperial, setUseImperial] = useState(true);
   const [weightLbs, setWeightLbs] = useState("");
   const [heightFt, setHeightFt] = useState("");
   const [heightIn, setHeightIn] = useState("");
