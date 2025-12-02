@@ -103,11 +103,11 @@ export function ProfileSetupModal({ open, onOpenChange, onComplete, initialData 
               type="button"
               onClick={() => setUseImperial(!useImperial)}
               className={`relative w-12 h-6 rounded-full transition-colors ${
-                useImperial ? "bg-primary" : "bg-muted"
+                useImperial ? "bg-primary" : "bg-muted-foreground/30"
               }`}
             >
               <span
-                className={`absolute top-1 w-4 h-4 rounded-full bg-background transition-transform ${
+                className={`absolute top-1 w-4 h-4 rounded-full bg-foreground transition-transform ${
                   useImperial ? "left-7" : "left-1"
                 }`}
               />
