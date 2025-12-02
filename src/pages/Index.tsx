@@ -17,6 +17,7 @@ import { WorkoutCalendar } from "@/components/WorkoutCalendar";
 import { FavoriteWorkouts } from "@/components/FavoriteWorkouts";
 import { WeeklyGoalTracker } from "@/components/WeeklyGoalTracker";
 import { NotificationSettings } from "@/components/NotificationSettings";
+import { OnboardingWizard } from "@/components/onboarding/OnboardingWizard";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dumbbell, LogOut, Settings, Plus, LogIn, User, Zap, Star, BarChart3, History, Calendar, Sparkles } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -35,6 +36,7 @@ const Index = () => {
   const [workoutToLog, setWorkoutToLog] = useState<any>(null);
   const [refreshStats, setRefreshStats] = useState(0);
   const [activeTab, setActiveTab] = useState("workout");
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   // Refs for scrolling
   const workoutRef = useRef<HTMLDivElement>(null);
@@ -93,8 +95,13 @@ const Index = () => {
 
       if (data) {
         setProfile(data);
+        // Show onboarding if not completed
+        if (!data.onboarding_completed) {
+          setShowOnboarding(true);
+        }
       } else {
-        setShowGoalModal(true);
+        // New user - show onboarding
+        setShowOnboarding(true);
       }
     } catch (error) {
       console.error("Error checking profile:", error);
@@ -175,7 +182,38 @@ const Index = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const handleOnboardingComplete = () => {
+    setShowOnboarding(false);
+    if (user) {
+      checkProfile(user.id);
+      loadEquipment(user.id);
+    }
+  };
+
+  const handleOnboardingGenerateWorkout = () => {
+    setShowOnboarding(false);
+    if (user) {
+      checkProfile(user.id);
+      loadEquipment(user.id);
+    }
+    // Scroll to workout generator after a short delay
+    setTimeout(() => {
+      workoutRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 100);
+  };
+
   const hasPersonalDetails = profile?.weight_kg && profile?.birth_year;
+
+  // Show onboarding wizard for new authenticated users
+  if (user && showOnboarding) {
+    return (
+      <OnboardingWizard
+        userId={user.id}
+        onComplete={handleOnboardingComplete}
+        onGenerateWorkout={handleOnboardingGenerateWorkout}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
