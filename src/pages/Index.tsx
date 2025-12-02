@@ -286,29 +286,22 @@ const Index = () => {
       <main className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-8">
-            {/* Generated Workout Display */}
+            {/* Today's Suggestion - only for logged in users */}
             <div ref={workoutRef} className="scroll-mt-20">
-              {generatedWorkout ? (
-                <div>
-                  <h2 className="text-2xl font-bold mb-4">Your Generated Workout</h2>
-                  <WorkoutCard 
-                    workout={generatedWorkout} 
-                    onLog={handleLogWorkout}
-                    onDismiss={() => setGeneratedWorkout(null)}
-                  />
-                </div>
-              ) : (
-                <Card className="border-dashed">
-                  <CardContent className="p-8 text-center">
-                    <Zap className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                    <h3 className="text-lg font-semibold mb-2">No Workout Generated</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Use the generator on the right to create a personalized workout
-                    </p>
-                  </CardContent>
-                </Card>
-              )}
+              {user && <DailySuggestion onStartWorkout={handleLogWorkout} />}
             </div>
+
+            {/* Generated Workout Display */}
+            {generatedWorkout && (
+              <div>
+                <h2 className="text-2xl font-bold mb-4">Your Generated Workout</h2>
+                <WorkoutCard 
+                  workout={generatedWorkout} 
+                  onLog={handleLogWorkout}
+                  onDismiss={() => setGeneratedWorkout(null)}
+                />
+              </div>
+            )}
 
             {/* Favorite Workouts Quick Start */}
             {user && (
@@ -319,9 +312,6 @@ const Index = () => {
                 />
               </div>
             )}
-
-            {/* Daily Suggestion - only for logged in users */}
-            {user && <DailySuggestion onStartWorkout={handleLogWorkout} />}
 
             {/* Manual Log Card for logged in users */}
             {user && (
