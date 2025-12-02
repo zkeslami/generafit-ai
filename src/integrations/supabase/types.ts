@@ -38,6 +38,36 @@ export type Database = {
         }
         Relationships: []
       }
+      upgrade_requests: {
+        Row: {
+          created_at: string | null
+          id: string
+          interested_features: string[] | null
+          message: string | null
+          user_email: string
+          user_id: string
+          user_name: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          interested_features?: string[] | null
+          message?: string | null
+          user_email: string
+          user_id: string
+          user_name?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          interested_features?: string[] | null
+          message?: string | null
+          user_email?: string
+          user_id?: string
+          user_name?: string | null
+        }
+        Relationships: []
+      }
       user_equipment: {
         Row: {
           created_at: string | null
@@ -72,8 +102,11 @@ export type Database = {
           goal_category: string | null
           height_cm: number | null
           id: string
+          nickname: string | null
           notification_email: string | null
+          preferred_unit_system: string | null
           primary_goal: string
+          subscription_tier: string | null
           target_date: string | null
           updated_at: string | null
           weekly_workout_goal: number | null
@@ -88,8 +121,11 @@ export type Database = {
           goal_category?: string | null
           height_cm?: number | null
           id: string
+          nickname?: string | null
           notification_email?: string | null
+          preferred_unit_system?: string | null
           primary_goal: string
+          subscription_tier?: string | null
           target_date?: string | null
           updated_at?: string | null
           weekly_workout_goal?: number | null
@@ -104,8 +140,11 @@ export type Database = {
           goal_category?: string | null
           height_cm?: number | null
           id?: string
+          nickname?: string | null
           notification_email?: string | null
+          preferred_unit_system?: string | null
           primary_goal?: string
+          subscription_tier?: string | null
           target_date?: string | null
           updated_at?: string | null
           weekly_workout_goal?: number | null
