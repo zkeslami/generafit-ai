@@ -263,7 +263,7 @@ Generate a balanced workout that complements their recent activity.`;
 
         // Send email
         const { error: emailError } = await resend.emails.send({
-          from: "Fitness Dashboard <onboarding@resend.dev>",
+          from: "GenerAI Fit <workouts@generaifit.com>",
           to: [targetEmail],
           subject: `🏋️ Your Daily Workout: ${workout.title}`,
           html: emailHtml,
