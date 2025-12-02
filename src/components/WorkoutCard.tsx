@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { 
   Clock, Zap, Pencil, Trash2, X, Check, ChevronDown, ChevronRight,
-  Dumbbell, Heart, Move, Target, Scale, ExternalLink
+  Dumbbell, Heart, Move, Target, Scale, ExternalLink, Star, Flame
 } from "lucide-react";
 import {
   AlertDialog,
@@ -22,6 +22,8 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface Exercise {
   name: string;
@@ -44,6 +46,9 @@ interface Workout {
   sections: WorkoutSection[];
   rationale?: string;
   source?: string;
+  is_favorite?: boolean;
+  calories_burned?: number;
+  estimated_calories?: number;
 }
 
 interface WorkoutCardProps {
@@ -51,6 +56,7 @@ interface WorkoutCardProps {
   onLog?: (modifiedWorkout: Workout) => void;
   onDelete?: () => void;
   onDismiss?: () => void;
+  onFavoriteChange?: () => void;
   showDate?: boolean;
   date?: string;
   editable?: boolean;
@@ -86,6 +92,7 @@ export const WorkoutCard = ({
   onLog, 
   onDelete,
   onDismiss,
+  onFavoriteChange,
   showDate, 
   date,
   editable = true,
@@ -94,8 +101,9 @@ export const WorkoutCard = ({
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [completedExercises, setCompletedExercises] = useState<Record<string, boolean>>({});
   const [removedExercises, setRemovedExercises] = useState<Set<string>>(new Set());
+  const [isFavorite, setIsFavorite] = useState(workout.is_favorite || false);
   const [openSections, setOpenSections] = useState<Record<number, boolean>>(() => 
-    Object.fromEntries(workout.sections.map((_, idx) => [idx, true]))
+    Object.fromEntries(workout.sections.map((_, idx) => [idx, false]))
   );
 
   const getExerciseKey = (sectionIdx: number, exIdx: number) => `${sectionIdx}-${exIdx}`;
@@ -159,10 +167,43 @@ export const WorkoutCard = ({
     setOpenSections(Object.fromEntries(workout.sections.map((_, idx) => [idx, false])));
   };
 
+  const toggleFavorite = async () => {
+    if (!workout.id) return;
+    
+    const newFavoriteState = !isFavorite;
+    setIsFavorite(newFavoriteState);
+    
+    const { error } = await supabase
+      .from("workouts")
+      .update({ is_favorite: newFavoriteState })
+      .eq("id", workout.id);
+    
+    if (error) {
+      setIsFavorite(!newFavoriteState);
+      toast.error("Failed to update favorite");
+    } else {
+      toast.success(newFavoriteState ? "Added to favorites" : "Removed from favorites");
+      onFavoriteChange?.();
+    }
+  };
+
   const allExpanded = Object.values(openSections).every(Boolean);
 
   const totalExercises = workout.sections.reduce((sum, s) => sum + s.exercises.length, 0);
   const remainingExercises = totalExercises - removedExercises.size;
+
+  // Calculate summary data
+  const muscleGroups = new Set<string>();
+  const exerciseTypes: Record<string, number> = {};
+  workout.sections.forEach(section => {
+    section.exercises.forEach(ex => {
+      if (ex.muscle_group) muscleGroups.add(ex.muscle_group);
+      const category = ex.category || "general";
+      exerciseTypes[category] = (exerciseTypes[category] || 0) + 1;
+    });
+  });
+
+  const estimatedCalories = workout.calories_burned || workout.estimated_calories;
 
   return (
     <>
@@ -180,9 +221,25 @@ export const WorkoutCard = ({
                   <Clock className="w-3 h-3" />
                   {workout.duration_minutes} min
                 </span>
+                {estimatedCalories && (
+                  <span className="flex items-center gap-1 text-sm text-orange-400">
+                    <Flame className="w-3 h-3" />
+                    ~{estimatedCalories} cal
+                  </span>
+                )}
               </CardDescription>
             </div>
             <div className="flex gap-1">
+              {workout.id && (
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={toggleFavorite}
+                  className={isFavorite ? "text-yellow-500" : "text-muted-foreground"}
+                >
+                  <Star className={`w-4 h-4 ${isFavorite ? "fill-yellow-500" : ""}`} />
+                </Button>
+              )}
               {onLog && editable && !isEditing && (
                 <Button variant="ghost" size="icon" onClick={() => setIsEditing(true)}>
                   <Pencil className="w-4 h-4" />
@@ -210,6 +267,27 @@ export const WorkoutCard = ({
               )}
             </div>
           </div>
+
+          {/* Workout Summary */}
+          <div className="mt-3 p-3 bg-muted/30 rounded-lg border border-border">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+              <div>
+                <span className="text-muted-foreground">Exercises</span>
+                <p className="font-semibold">{totalExercises}</p>
+              </div>
+              <div>
+                <span className="text-muted-foreground">Sections</span>
+                <p className="font-semibold">{workout.sections.length}</p>
+              </div>
+              {muscleGroups.size > 0 && (
+                <div className="col-span-2">
+                  <span className="text-muted-foreground">Muscles</span>
+                  <p className="font-semibold text-xs">{[...muscleGroups].slice(0, 4).join(", ")}</p>
+                </div>
+              )}
+            </div>
+          </div>
+
           {workout.rationale && (
             <div className="mt-3 p-3 bg-primary/10 rounded-lg border border-primary/20">
               <p className="text-sm flex items-start gap-2">

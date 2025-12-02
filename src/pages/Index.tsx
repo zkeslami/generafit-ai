@@ -6,13 +6,16 @@ import { toast } from "sonner";
 import { GoalSetupModal } from "@/components/GoalSetupModal";
 import { EquipmentSetupModal } from "@/components/EquipmentSetupModal";
 import { ManualWorkoutModal } from "@/components/ManualWorkoutModal";
+import { ProfileSetupModal } from "@/components/ProfileSetupModal";
 import { WorkoutGenerator } from "@/components/WorkoutGenerator";
 import { WorkoutCard } from "@/components/WorkoutCard";
 import { LogWorkoutModal } from "@/components/LogWorkoutModal";
 import { DailySuggestion } from "@/components/DailySuggestion";
 import { WorkoutStats } from "@/components/WorkoutStats";
 import { WorkoutHistory } from "@/components/WorkoutHistory";
-import { Dumbbell, LogOut, Settings, Plus, LogIn } from "lucide-react";
+import { WorkoutCalendar } from "@/components/WorkoutCalendar";
+import { FavoriteWorkouts } from "@/components/FavoriteWorkouts";
+import { Dumbbell, LogOut, Settings, Plus, LogIn, User } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
 const Index = () => {
@@ -23,13 +26,13 @@ const Index = () => {
   const [showGoalModal, setShowGoalModal] = useState(false);
   const [showEquipmentModal, setShowEquipmentModal] = useState(false);
   const [showManualWorkoutModal, setShowManualWorkoutModal] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
   const [generatedWorkout, setGeneratedWorkout] = useState<any>(null);
   const [showLogModal, setShowLogModal] = useState(false);
   const [workoutToLog, setWorkoutToLog] = useState<any>(null);
   const [refreshStats, setRefreshStats] = useState(0);
 
   useEffect(() => {
-    // Check authentication but don't redirect
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         setUser(session.user);
@@ -121,7 +124,6 @@ const Index = () => {
     setGeneratedWorkout(null);
     setRefreshStats(prev => prev + 1);
     
-    // Check milestones
     if (user) {
       supabase
         .from("workouts")
@@ -140,6 +142,17 @@ const Index = () => {
   const handleManualWorkoutComplete = () => {
     setRefreshStats(prev => prev + 1);
   };
+
+  const handleQuickStart = (workout: any) => {
+    setGeneratedWorkout({
+      ...workout,
+      id: undefined,
+      source: "favorite",
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const hasPersonalDetails = profile?.weight_kg && profile?.birth_year;
 
   return (
     <div className="min-h-screen bg-background">
@@ -160,9 +173,19 @@ const Index = () => {
           </div>
           <div className="flex items-center gap-2">
             {user && (
-              <Button variant="ghost" size="icon" onClick={() => setShowEquipmentModal(true)}>
-                <Settings className="w-4 h-4" />
-              </Button>
+              <>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={() => setShowProfileModal(true)}
+                  title="Personal Details"
+                >
+                  <User className="w-4 h-4" />
+                </Button>
+                <Button variant="ghost" size="icon" onClick={() => setShowEquipmentModal(true)}>
+                  <Settings className="w-4 h-4" />
+                </Button>
+              </>
             )}
             {user ? (
               <Button variant="ghost" size="sm" onClick={handleLogout}>
@@ -193,6 +216,20 @@ const Index = () => {
         </div>
       )}
 
+      {/* Personal Details Banner */}
+      {user && !hasPersonalDetails && (
+        <div className="bg-accent/10 border-b border-accent/20">
+          <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">
+              📊 Add your personal details for accurate calorie estimates
+            </p>
+            <Button variant="link" size="sm" onClick={() => setShowProfileModal(true)}>
+              Add Details →
+            </Button>
+          </div>
+        </div>
+      )}
+
       <main className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-8">
@@ -206,6 +243,14 @@ const Index = () => {
                   onDismiss={() => setGeneratedWorkout(null)}
                 />
               </div>
+            )}
+
+            {/* Favorite Workouts Quick Start */}
+            {user && (
+              <FavoriteWorkouts 
+                onQuickStart={handleQuickStart}
+                refreshTrigger={refreshStats}
+              />
             )}
 
             {/* Daily Suggestion - only for logged in users */}
@@ -260,7 +305,11 @@ const Index = () => {
               onWorkoutGenerated={handleWorkoutGenerated}
               userGoal={profile?.custom_goal || profile?.primary_goal}
               equipment={equipment}
+              userProfile={profile}
             />
+
+            {/* Workout Calendar - only for logged in users */}
+            {user && <WorkoutCalendar refreshTrigger={refreshStats} />}
           </div>
         </div>
       </main>
@@ -286,6 +335,15 @@ const Index = () => {
         open={showManualWorkoutModal}
         onClose={() => setShowManualWorkoutModal(false)}
         onComplete={handleManualWorkoutComplete}
+      />
+
+      <ProfileSetupModal
+        open={showProfileModal}
+        onOpenChange={setShowProfileModal}
+        onComplete={() => {
+          if (user) checkProfile(user.id);
+        }}
+        initialData={profile}
       />
 
       {workoutToLog && (

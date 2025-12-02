@@ -6,6 +6,47 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// MET values for different workout types (Metabolic Equivalent of Task)
+const MET_VALUES: Record<string, number> = {
+  "Strength Training": 5.0,
+  "Strength": 5.0,
+  "Cardio": 7.0,
+  "HIIT": 8.0,
+  "Yoga": 3.0,
+  "Calisthenics": 5.5,
+  "Circuit Training": 6.5,
+  "Full Body": 5.5,
+  "Upper Body": 5.0,
+  "Lower Body": 5.5,
+};
+
+function calculateCalories(workoutType: string, durationMinutes: number, weightKg?: number, age?: number, gender?: string): number {
+  // Find the best matching MET value
+  let met = 5.0;
+  const typeUpper = workoutType.toUpperCase();
+  for (const [key, value] of Object.entries(MET_VALUES)) {
+    if (typeUpper.includes(key.toUpperCase())) {
+      met = value;
+      break;
+    }
+  }
+  
+  const weight = weightKg || 70;
+  let calories = met * weight * (durationMinutes / 60);
+  
+  if (age) {
+    if (age > 40) calories *= 0.95;
+    if (age > 50) calories *= 0.90;
+    if (age > 60) calories *= 0.85;
+  }
+  
+  if (gender === 'female') {
+    calories *= 0.9;
+  }
+  
+  return Math.round(calories);
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -30,10 +71,10 @@ serve(async (req) => {
 
     console.log('Fetching data for user:', user.id);
 
-    // Get user's goal
+    // Get user's profile including personal details
     const { data: profile } = await supabase
       .from('user_profiles')
-      .select('primary_goal')
+      .select('primary_goal, weight_kg, height_cm, birth_year, gender')
       .eq('id', user.id)
       .single();
 
@@ -117,6 +158,18 @@ Consider their feedback and difficulty ratings to adjust intensity. Make it fres
     }
 
     const workout = JSON.parse(generatedText);
+
+    // Calculate estimated calories
+    const age = profile?.birth_year ? new Date().getFullYear() - profile.birth_year : undefined;
+    const estimatedCalories = calculateCalories(
+      workout.type || 'General',
+      workout.duration_minutes || 30,
+      profile?.weight_kg,
+      age,
+      profile?.gender
+    );
+
+    workout.estimated_calories = estimatedCalories;
 
     return new Response(JSON.stringify({ workout }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

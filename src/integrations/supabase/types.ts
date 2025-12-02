@@ -40,31 +40,43 @@ export type Database = {
       }
       user_profiles: {
         Row: {
+          birth_year: number | null
           created_at: string | null
           custom_goal: string | null
+          gender: string | null
           goal_category: string | null
+          height_cm: number | null
           id: string
           primary_goal: string
           target_date: string | null
           updated_at: string | null
+          weight_kg: number | null
         }
         Insert: {
+          birth_year?: number | null
           created_at?: string | null
           custom_goal?: string | null
+          gender?: string | null
           goal_category?: string | null
+          height_cm?: number | null
           id: string
           primary_goal: string
           target_date?: string | null
           updated_at?: string | null
+          weight_kg?: number | null
         }
         Update: {
+          birth_year?: number | null
           created_at?: string | null
           custom_goal?: string | null
+          gender?: string | null
           goal_category?: string | null
+          height_cm?: number | null
           id?: string
           primary_goal?: string
           target_date?: string | null
           updated_at?: string | null
+          weight_kg?: number | null
         }
         Relationships: []
       }
@@ -76,6 +88,7 @@ export type Database = {
           duration_minutes: number
           feedback: string | null
           id: string
+          is_favorite: boolean | null
           location: Json | null
           logged_duration: number | null
           sections: Json
@@ -91,6 +104,7 @@ export type Database = {
           duration_minutes: number
           feedback?: string | null
           id?: string
+          is_favorite?: boolean | null
           location?: Json | null
           logged_duration?: number | null
           sections: Json
@@ -106,6 +120,7 @@ export type Database = {
           duration_minutes?: number
           feedback?: string | null
           id?: string
+          is_favorite?: boolean | null
           location?: Json | null
           logged_duration?: number | null
           sections?: Json

@@ -5,15 +5,47 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// MET values for different workout types (Metabolic Equivalent of Task)
+const MET_VALUES: Record<string, number> = {
+  "Strength Training": 5.0,
+  "Cardio": 7.0,
+  "HIIT": 8.0,
+  "Yoga": 3.0,
+  "Calisthenics": 5.5,
+  "Circuit Training": 6.5,
+};
+
+function calculateCalories(workoutType: string, durationMinutes: number, weightKg?: number, age?: number, gender?: string): number {
+  const met = MET_VALUES[workoutType] || 5.0;
+  const weight = weightKg || 70; // Default to 70kg if not provided
+  
+  // Basic MET calculation: Calories = MET * weight(kg) * time(hours)
+  let calories = met * weight * (durationMinutes / 60);
+  
+  // Adjust for age (metabolic rate decreases with age)
+  if (age) {
+    if (age > 40) calories *= 0.95;
+    if (age > 50) calories *= 0.90;
+    if (age > 60) calories *= 0.85;
+  }
+  
+  // Slight adjustment for gender (males typically burn slightly more)
+  if (gender === 'female') {
+    calories *= 0.9;
+  }
+  
+  return Math.round(calories);
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { targetMuscles, workoutType, duration, userGoal, equipment } = await req.json();
+    const { targetMuscles, workoutType, duration, userGoal, equipment, userProfile } = await req.json();
 
-    console.log('Generating workout with params:', { targetMuscles, workoutType, duration, userGoal, equipment });
+    console.log('Generating workout with params:', { targetMuscles, workoutType, duration, userGoal, equipment, userProfile });
 
     const equipmentConstraint = equipment && equipment.length > 0
       ? `\n\nIMPORTANT: Only use exercises that require this available equipment: ${equipment.join(', ')}. Do NOT include exercises requiring equipment not listed.`
@@ -29,7 +61,12 @@ Always return a valid JSON object with this exact structure:
     {
       "title": "Warm-up" | "Workout" | "Cool-down",
       "exercises": [
-        { "name": "string - exercise name", "details": "string - reps/duration/instructions" }
+        { 
+          "name": "string - exercise name", 
+          "details": "string - reps/duration/instructions",
+          "category": "string - one of: strength, cardio, flexibility, plyometric, core, balance",
+          "muscle_group": "string - primary muscle targeted (e.g., chest, back, legs, shoulders, arms, core)"
+        }
       ]
     }
   ]
@@ -89,6 +126,18 @@ Use current fitness trends and proven exercise science. Make it engaging and eff
       console.error('Invalid workout structure:', workout);
       throw new Error('Invalid workout structure from AI');
     }
+
+    // Calculate estimated calories
+    const age = userProfile?.birth_year ? new Date().getFullYear() - userProfile.birth_year : undefined;
+    const estimatedCalories = calculateCalories(
+      workoutType,
+      duration,
+      userProfile?.weight_kg,
+      age,
+      userProfile?.gender
+    );
+
+    workout.estimated_calories = estimatedCalories;
 
     return new Response(JSON.stringify({ workout }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

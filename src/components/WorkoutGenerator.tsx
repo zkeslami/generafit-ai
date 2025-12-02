@@ -3,16 +3,23 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Sparkles, Loader2 } from "lucide-react";
+import { Sparkles, Loader2, Target } from "lucide-react";
 
 interface WorkoutGeneratorProps {
   onWorkoutGenerated: (workout: any) => void;
   userGoal?: string;
   equipment?: string[];
+  userProfile?: {
+    weight_kg?: number | null;
+    height_cm?: number | null;
+    birth_year?: number | null;
+    gender?: string | null;
+  };
 }
 
 const MUSCLE_GROUPS = [
@@ -28,10 +35,11 @@ const WORKOUT_TYPES = [
   "Circuit Training"
 ];
 
-export const WorkoutGenerator = ({ onWorkoutGenerated, userGoal, equipment = [] }: WorkoutGeneratorProps) => {
+export const WorkoutGenerator = ({ onWorkoutGenerated, userGoal, equipment = [], userProfile }: WorkoutGeneratorProps) => {
   const [selectedMuscles, setSelectedMuscles] = useState<string[]>([]);
   const [workoutType, setWorkoutType] = useState("");
   const [duration, setDuration] = useState(30);
+  const [sessionGoal, setSessionGoal] = useState("");
   const [generating, setGenerating] = useState(false);
 
   const toggleMuscle = (muscle: string) => {
@@ -55,8 +63,14 @@ export const WorkoutGenerator = ({ onWorkoutGenerated, userGoal, equipment = [] 
           targetMuscles: selectedMuscles,
           workoutType,
           duration,
-          userGoal,
+          userGoal: sessionGoal || userGoal,
           equipment: equipment.length > 0 ? equipment : undefined,
+          userProfile: userProfile ? {
+            weight_kg: userProfile.weight_kg,
+            height_cm: userProfile.height_cm,
+            birth_year: userProfile.birth_year,
+            gender: userProfile.gender,
+          } : undefined,
         }
       });
 
@@ -65,6 +79,7 @@ export const WorkoutGenerator = ({ onWorkoutGenerated, userGoal, equipment = [] 
       if (data?.workout) {
         onWorkoutGenerated(data.workout);
         toast.success("Workout generated!");
+        setSessionGoal("");
       } else {
         throw new Error("No workout data received");
       }
@@ -143,6 +158,23 @@ export const WorkoutGenerator = ({ onWorkoutGenerated, userGoal, equipment = [] 
             <span>15 min</span>
             <span>90 min</span>
           </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="session-goal" className="flex items-center gap-2">
+            <Target className="w-4 h-4 text-muted-foreground" />
+            Session Goal (optional)
+          </Label>
+          <Textarea
+            id="session-goal"
+            placeholder="e.g., Focus on explosive power, recover from yesterday's leg day, prepare for a 5K..."
+            value={sessionGoal}
+            onChange={(e) => setSessionGoal(e.target.value)}
+            className="resize-none h-20"
+          />
+          <p className="text-xs text-muted-foreground">
+            Describe what you want to achieve in this specific workout
+          </p>
         </div>
 
         <Button 
