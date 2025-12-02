@@ -14,23 +14,56 @@ export type Database = {
   }
   public: {
     Tables: {
+      user_equipment: {
+        Row: {
+          created_at: string | null
+          equipment_list: Json
+          id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          equipment_list?: Json
+          id?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          equipment_list?: Json
+          id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_profiles: {
         Row: {
           created_at: string | null
+          custom_goal: string | null
+          goal_category: string | null
           id: string
           primary_goal: string
+          target_date: string | null
           updated_at: string | null
         }
         Insert: {
           created_at?: string | null
+          custom_goal?: string | null
+          goal_category?: string | null
           id: string
           primary_goal: string
+          target_date?: string | null
           updated_at?: string | null
         }
         Update: {
           created_at?: string | null
+          custom_goal?: string | null
+          goal_category?: string | null
           id?: string
           primary_goal?: string
+          target_date?: string | null
           updated_at?: string | null
         }
         Relationships: []
@@ -46,6 +79,7 @@ export type Database = {
           location: Json | null
           logged_duration: number | null
           sections: Json
+          source: string | null
           title: string
           type: string
           user_id: string
@@ -60,6 +94,7 @@ export type Database = {
           location?: Json | null
           logged_duration?: number | null
           sections: Json
+          source?: string | null
           title: string
           type: string
           user_id: string
@@ -74,6 +109,7 @@ export type Database = {
           location?: Json | null
           logged_duration?: number | null
           sections?: Json
+          source?: string | null
           title?: string
           type?: string
           user_id?: string

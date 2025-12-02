@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,12 +16,23 @@ interface LogWorkoutModalProps {
 }
 
 export const LogWorkoutModal = ({ open, onClose, workout }: LogWorkoutModalProps) => {
-  const [duration, setDuration] = useState(workout.duration_minutes);
+  const [duration, setDuration] = useState(workout?.duration_minutes || 30);
   const [calories, setCalories] = useState(0);
   const [difficulty, setDifficulty] = useState([5]);
   const [feedback, setFeedback] = useState("");
   const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const [loading, setLoading] = useState(false);
+
+  // Reset form when workout changes
+  useEffect(() => {
+    if (workout) {
+      setDuration(workout.duration_minutes || 30);
+      setCalories(0);
+      setDifficulty([5]);
+      setFeedback("");
+      setLocation(null);
+    }
+  }, [workout]);
 
   const getLocation = () => {
     if (navigator.geolocation) {
@@ -58,10 +69,11 @@ export const LogWorkoutModal = ({ open, onClose, workout }: LogWorkoutModalProps
         duration_minutes: workout.duration_minutes,
         sections: workout.sections,
         logged_duration: duration,
-        calories_burned: calories,
+        calories_burned: calories || null,
         difficulty: difficulty[0],
         feedback: feedback || null,
         location: location,
+        source: "generated",
       });
 
       if (error) throw error;
@@ -76,13 +88,21 @@ export const LogWorkoutModal = ({ open, onClose, workout }: LogWorkoutModalProps
     }
   };
 
+  if (!workout) return null;
+
+  // Calculate how many exercises remain (in case workout was modified)
+  const totalExercises = workout.sections?.reduce(
+    (sum: number, section: any) => sum + (section.exercises?.length || 0),
+    0
+  ) || 0;
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Log Workout</DialogTitle>
           <DialogDescription>
-            Track your workout performance and progress
+            {workout.title} • {totalExercises} exercises
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -99,14 +119,14 @@ export const LogWorkoutModal = ({ open, onClose, workout }: LogWorkoutModalProps
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="calories">Calories Burned</Label>
+            <Label htmlFor="calories">Calories Burned (optional)</Label>
             <Input
               id="calories"
               type="number"
               min="0"
-              value={calories}
+              value={calories || ""}
               onChange={(e) => setCalories(Number(e.target.value))}
-              required
+              placeholder="Estimated calories"
             />
           </div>
 
@@ -123,7 +143,7 @@ export const LogWorkoutModal = ({ open, onClose, workout }: LogWorkoutModalProps
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="feedback">My Feedback (Optional)</Label>
+            <Label htmlFor="feedback">Feedback (Optional)</Label>
             <Textarea
               id="feedback"
               placeholder="How did the workout feel?"

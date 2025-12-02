@@ -11,9 +11,13 @@ serve(async (req) => {
   }
 
   try {
-    const { targetMuscles, workoutType, duration, userGoal } = await req.json();
+    const { targetMuscles, workoutType, duration, userGoal, equipment } = await req.json();
 
-    console.log('Generating workout with params:', { targetMuscles, workoutType, duration, userGoal });
+    console.log('Generating workout with params:', { targetMuscles, workoutType, duration, userGoal, equipment });
+
+    const equipmentConstraint = equipment && equipment.length > 0
+      ? `\n\nIMPORTANT: Only use exercises that require this available equipment: ${equipment.join(', ')}. Do NOT include exercises requiring equipment not listed.`
+      : '';
 
     const systemPrompt = `You are a professional fitness trainer creating structured workout plans. 
 Always return a valid JSON object with this exact structure:
@@ -31,7 +35,7 @@ Always return a valid JSON object with this exact structure:
   ]
 }
 
-Make the workout challenging but achievable. Include proper warm-up and cool-down sections.`;
+Make the workout challenging but achievable. Include proper warm-up and cool-down sections.${equipmentConstraint}`;
 
     const userPrompt = `Create a ${duration}-minute ${workoutType} workout targeting ${targetMuscles.join(', ')}. 
 User's fitness goal: ${userGoal || 'general fitness'}.
