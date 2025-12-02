@@ -104,6 +104,8 @@ export type Database = {
           id: string
           nickname: string | null
           notification_email: string | null
+          onboarding_completed: boolean | null
+          onboarding_completed_at: string | null
           preferred_unit_system: string | null
           primary_goal: string
           subscription_tier: string | null
@@ -123,6 +125,8 @@ export type Database = {
           id: string
           nickname?: string | null
           notification_email?: string | null
+          onboarding_completed?: boolean | null
+          onboarding_completed_at?: string | null
           preferred_unit_system?: string | null
           primary_goal: string
           subscription_tier?: string | null
@@ -142,6 +146,8 @@ export type Database = {
           id?: string
           nickname?: string | null
           notification_email?: string | null
+          onboarding_completed?: boolean | null
+          onboarding_completed_at?: string | null
           preferred_unit_system?: string | null
           primary_goal?: string
           subscription_tier?: string | null
