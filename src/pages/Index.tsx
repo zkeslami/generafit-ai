@@ -201,7 +201,7 @@ const Index = () => {
                   variant="ghost" 
                   size="sm"
                   onClick={() => navigate("/profile?tab=subscription")}
-                  className="text-primary hover:text-primary hover:bg-primary/10"
+                  className="text-primary hover:text-primary hover:bg-primary/10 hover:ring-1 hover:ring-primary/50 transition-all"
                 >
                   <Sparkles className="w-4 h-4 mr-1" />
                   Upgrade
