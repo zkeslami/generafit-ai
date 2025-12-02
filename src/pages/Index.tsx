@@ -18,7 +18,7 @@ import { FavoriteWorkouts } from "@/components/FavoriteWorkouts";
 import { WeeklyGoalTracker } from "@/components/WeeklyGoalTracker";
 import { NotificationSettings } from "@/components/NotificationSettings";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dumbbell, LogOut, Settings, Plus, LogIn, User, Zap, Star, BarChart3, History, Calendar } from "lucide-react";
+import { Dumbbell, LogOut, Settings, Plus, LogIn, User, Zap, Star, BarChart3, History, Calendar, Sparkles } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
 const Index = () => {
@@ -199,9 +199,18 @@ const Index = () => {
               <>
                 <Button 
                   variant="ghost" 
+                  size="sm"
+                  onClick={() => navigate("/profile?tab=subscription")}
+                  className="text-primary hover:text-primary"
+                >
+                  <Sparkles className="w-4 h-4 mr-1" />
+                  Upgrade
+                </Button>
+                <Button 
+                  variant="ghost" 
                   size="icon" 
-                  onClick={() => setShowProfileModal(true)}
-                  title="Personal Details"
+                  onClick={() => navigate("/profile")}
+                  title="Profile Settings"
                 >
                   <User className="w-4 h-4" />
                 </Button>
