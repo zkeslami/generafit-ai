@@ -303,6 +303,14 @@ const Index = () => {
               </div>
             )}
 
+            {/* Workout Generator */}
+            <WorkoutGenerator 
+              onWorkoutGenerated={handleWorkoutGenerated}
+              userGoal={profile?.custom_goal || profile?.primary_goal}
+              equipment={equipment}
+              userProfile={profile}
+            />
+
             {/* Favorite Workouts Quick Start */}
             {user && (
               <div ref={favoritesRef} className="scroll-mt-20">
@@ -361,21 +369,14 @@ const Index = () => {
             )}
           </div>
 
-          <div className="space-y-8">
-            <WorkoutGenerator 
-              onWorkoutGenerated={handleWorkoutGenerated}
-              userGoal={profile?.custom_goal || profile?.primary_goal}
-              equipment={equipment}
-              userProfile={profile}
-            />
-
-            {/* Workout Calendar - only for logged in users */}
-            {user && (
+          {/* Workout Calendar - only for logged in users */}
+          {user && (
+            <div className="space-y-8">
               <div ref={calendarRef} className="scroll-mt-20">
                 <WorkoutCalendar refreshTrigger={refreshStats} />
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </main>
 
