@@ -2,7 +2,8 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Dumbbell, Sparkles, ArrowRight } from "lucide-react";
+import { Sparkles, ArrowRight } from "lucide-react";
+import { AithosLogo } from "@/components/AithosLogo";
 
 interface WelcomeStepProps {
   nickname: string;
@@ -15,7 +16,7 @@ export const WelcomeStep = ({ nickname, onNicknameChange, onNext }: WelcomeStepP
     <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4 animate-fade-in">
       <div className="relative mb-8">
         <div className="w-24 h-24 bg-primary/20 rounded-full flex items-center justify-center animate-pulse">
-          <Dumbbell className="w-12 h-12 text-primary" />
+          <AithosLogo size={48} className="text-primary" />
         </div>
         <Sparkles className="w-6 h-6 text-primary absolute -top-2 -right-2 animate-bounce" />
       </div>

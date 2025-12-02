@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Dumbbell } from "lucide-react";
+import { AithosLogo } from "@/components/AithosLogo";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -62,7 +62,7 @@ const Auth = () => {
         <CardHeader className="text-center space-y-2">
           <div className="flex justify-center mb-4">
             <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center">
-              <Dumbbell className="w-8 h-8 text-primary-foreground" />
+              <AithosLogo size={32} className="text-primary-foreground" />
             </div>
           </div>
           <CardTitle className="text-2xl">AIthos</CardTitle>

@@ -19,7 +19,8 @@ import { WeeklyGoalTracker } from "@/components/WeeklyGoalTracker";
 import { NotificationSettings } from "@/components/NotificationSettings";
 import { OnboardingWizard } from "@/components/onboarding/OnboardingWizard";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dumbbell, LogOut, Settings, Plus, LogIn, User, Zap, Star, BarChart3, History, Calendar, Sparkles } from "lucide-react";
+import { LogOut, Settings, Plus, LogIn, User, Zap, Star, BarChart3, History, Calendar, Sparkles } from "lucide-react";
+import { AithosLogo } from "@/components/AithosLogo";
 import { Card, CardContent } from "@/components/ui/card";
 
 const Index = () => {
@@ -221,7 +222,7 @@ const Index = () => {
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
-              <Dumbbell className="w-5 h-5 text-primary-foreground" />
+              <AithosLogo size={20} className="text-primary-foreground" />
             </div>
             <div>
               <h1 className="text-xl font-bold">AIthos</h1>
