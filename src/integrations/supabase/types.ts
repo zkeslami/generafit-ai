@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      notification_logs: {
+        Row: {
+          email_sent_to: string
+          id: string
+          sent_at: string
+          user_id: string
+          workout_data: Json
+        }
+        Insert: {
+          email_sent_to: string
+          id?: string
+          sent_at?: string
+          user_id: string
+          workout_data: Json
+        }
+        Update: {
+          email_sent_to?: string
+          id?: string
+          sent_at?: string
+          user_id?: string
+          workout_data?: Json
+        }
+        Relationships: []
+      }
       user_equipment: {
         Row: {
           created_at: string | null
@@ -43,39 +67,48 @@ export type Database = {
           birth_year: number | null
           created_at: string | null
           custom_goal: string | null
+          email_notifications: boolean | null
           gender: string | null
           goal_category: string | null
           height_cm: number | null
           id: string
+          notification_email: string | null
           primary_goal: string
           target_date: string | null
           updated_at: string | null
+          weekly_workout_goal: number | null
           weight_kg: number | null
         }
         Insert: {
           birth_year?: number | null
           created_at?: string | null
           custom_goal?: string | null
+          email_notifications?: boolean | null
           gender?: string | null
           goal_category?: string | null
           height_cm?: number | null
           id: string
+          notification_email?: string | null
           primary_goal: string
           target_date?: string | null
           updated_at?: string | null
+          weekly_workout_goal?: number | null
           weight_kg?: number | null
         }
         Update: {
           birth_year?: number | null
           created_at?: string | null
           custom_goal?: string | null
+          email_notifications?: boolean | null
           gender?: string | null
           goal_category?: string | null
           height_cm?: number | null
           id?: string
+          notification_email?: string | null
           primary_goal?: string
           target_date?: string | null
           updated_at?: string | null
+          weekly_workout_goal?: number | null
           weight_kg?: number | null
         }
         Relationships: []

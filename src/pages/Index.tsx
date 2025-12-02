@@ -15,6 +15,8 @@ import { WorkoutStats } from "@/components/WorkoutStats";
 import { WorkoutHistory } from "@/components/WorkoutHistory";
 import { WorkoutCalendar } from "@/components/WorkoutCalendar";
 import { FavoriteWorkouts } from "@/components/FavoriteWorkouts";
+import { WeeklyGoalTracker } from "@/components/WeeklyGoalTracker";
+import { NotificationSettings } from "@/components/NotificationSettings";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dumbbell, LogOut, Settings, Plus, LogIn, User, Zap, Star, BarChart3, History, Calendar } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -369,12 +371,20 @@ const Index = () => {
             )}
           </div>
 
-          {/* Workout Calendar - only for logged in users */}
+          {/* Sidebar - only for logged in users */}
           {user && (
-            <div className="space-y-8">
+            <div className="space-y-6">
+              <WeeklyGoalTracker refreshTrigger={refreshStats} />
               <div ref={calendarRef} className="scroll-mt-20">
                 <WorkoutCalendar refreshTrigger={refreshStats} />
               </div>
+              <NotificationSettings 
+                initialEnabled={profile?.email_notifications}
+                initialEmail={profile?.notification_email}
+                onUpdate={() => {
+                  if (user) checkProfile(user.id);
+                }}
+              />
             </div>
           )}
         </div>
