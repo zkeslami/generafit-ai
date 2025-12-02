@@ -203,6 +203,7 @@ const Index = () => {
                 <WorkoutCard 
                   workout={generatedWorkout} 
                   onLog={handleLogWorkout}
+                  onDismiss={() => setGeneratedWorkout(null)}
                 />
               </div>
             )}

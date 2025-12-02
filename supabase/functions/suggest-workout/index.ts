@@ -61,13 +61,20 @@ Return a valid JSON object with this structure:
   "rationale": "string - why this workout is perfect for the user today (2-3 sentences)",
   "sections": [
     {
-      "title": "Warm-up" | "Workout" | "Cool-down",
+      "title": "Warm-up" | "Main Workout" | "Cool-down",
       "exercises": [
-        { "name": "string", "details": "string" }
+        { 
+          "name": "string - exercise name", 
+          "details": "string - sets x reps or duration",
+          "category": "strength" | "cardio" | "flexibility" | "plyometric" | "core" | "balance",
+          "muscle_group": "string - primary muscle worked"
+        }
       ]
     }
   ]
-}`;
+}
+
+IMPORTANT: Include category and muscle_group for EVERY exercise.`;
 
     const userPrompt = `Create a personalized workout suggestion based on:
 - User's goal: ${userGoal}

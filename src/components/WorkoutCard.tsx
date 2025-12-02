@@ -3,7 +3,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Clock, Zap, Pencil, Trash2, X, Check } from "lucide-react";
+import { 
+  Clock, Zap, Pencil, Trash2, X, Check, ChevronDown, ChevronRight,
+  Dumbbell, Heart, Move, Target, Scale, ExternalLink
+} from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,10 +17,18 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 interface Exercise {
   name: string;
   details: string;
+  category?: string;
+  muscle_group?: string;
+  equipment?: string;
 }
 
 interface WorkoutSection {
@@ -39,15 +50,42 @@ interface WorkoutCardProps {
   workout: Workout;
   onLog?: (modifiedWorkout: Workout) => void;
   onDelete?: () => void;
+  onDismiss?: () => void;
   showDate?: boolean;
   date?: string;
   editable?: boolean;
 }
 
+const getCategoryIcon = (category?: string) => {
+  switch (category?.toLowerCase()) {
+    case "strength":
+      return <Dumbbell className="w-4 h-4 text-orange-400" />;
+    case "cardio":
+      return <Heart className="w-4 h-4 text-red-400" />;
+    case "flexibility":
+    case "stretch":
+      return <Move className="w-4 h-4 text-green-400" />;
+    case "plyometric":
+      return <Zap className="w-4 h-4 text-yellow-400" />;
+    case "core":
+      return <Target className="w-4 h-4 text-blue-400" />;
+    case "balance":
+      return <Scale className="w-4 h-4 text-purple-400" />;
+    default:
+      return <Dumbbell className="w-4 h-4 text-muted-foreground" />;
+  }
+};
+
+const getFormGifLink = (exerciseName: string) => {
+  const searchQuery = encodeURIComponent(`${exerciseName} exercise form gif`);
+  return `https://www.google.com/search?q=${searchQuery}&tbm=isch`;
+};
+
 export const WorkoutCard = ({ 
   workout, 
   onLog, 
   onDelete,
+  onDismiss,
   showDate, 
   date,
   editable = true,
@@ -56,6 +94,9 @@ export const WorkoutCard = ({
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [completedExercises, setCompletedExercises] = useState<Record<string, boolean>>({});
   const [removedExercises, setRemovedExercises] = useState<Set<string>>(new Set());
+  const [openSections, setOpenSections] = useState<Record<number, boolean>>(() => 
+    Object.fromEntries(workout.sections.map((_, idx) => [idx, true]))
+  );
 
   const getExerciseKey = (sectionIdx: number, exIdx: number) => `${sectionIdx}-${exIdx}`;
 
@@ -106,6 +147,20 @@ export const WorkoutCard = ({
     setCompletedExercises({});
   };
 
+  const toggleSection = (idx: number) => {
+    setOpenSections(prev => ({ ...prev, [idx]: !prev[idx] }));
+  };
+
+  const expandAll = () => {
+    setOpenSections(Object.fromEntries(workout.sections.map((_, idx) => [idx, true])));
+  };
+
+  const collapseAll = () => {
+    setOpenSections(Object.fromEntries(workout.sections.map((_, idx) => [idx, false])));
+  };
+
+  const allExpanded = Object.values(openSections).every(Boolean);
+
   const totalExercises = workout.sections.reduce((sum, s) => sum + s.exercises.length, 0);
   const remainingExercises = totalExercises - removedExercises.size;
 
@@ -143,6 +198,16 @@ export const WorkoutCard = ({
                   <Trash2 className="w-4 h-4" />
                 </Button>
               )}
+              {onDismiss && (
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={onDismiss}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              )}
             </div>
           </div>
           {workout.rationale && (
@@ -165,66 +230,108 @@ export const WorkoutCard = ({
             </div>
           )}
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-3">
+          {/* Expand/Collapse All button */}
+          <div className="flex justify-end">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={allExpanded ? collapseAll : expandAll}
+              className="text-xs text-muted-foreground"
+            >
+              {allExpanded ? "Collapse All" : "Expand All"}
+            </Button>
+          </div>
+
           {workout.sections.map((section, sIdx) => (
-            <div key={sIdx} className="space-y-2">
-              <h4 className="text-sm font-semibold text-primary">{section.title}</h4>
-              <ul className="space-y-2">
-                {section.exercises.map((exercise, exIdx) => {
-                  const key = getExerciseKey(sIdx, exIdx);
-                  const isRemoved = removedExercises.has(key);
-                  const isCompleted = completedExercises[key];
+            <Collapsible
+              key={sIdx}
+              open={openSections[sIdx]}
+              onOpenChange={() => toggleSection(sIdx)}
+            >
+              <CollapsibleTrigger asChild>
+                <button className="flex items-center gap-2 w-full text-left p-2 rounded-lg hover:bg-secondary/50 transition-colors">
+                  {openSections[sIdx] ? (
+                    <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                  ) : (
+                    <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                  )}
+                  <h4 className="text-sm font-semibold text-primary">{section.title}</h4>
+                  <span className="text-xs text-muted-foreground">
+                    ({section.exercises.length} exercises)
+                  </span>
+                </button>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <ul className="space-y-2 ml-6 mt-2">
+                  {section.exercises.map((exercise, exIdx) => {
+                    const key = getExerciseKey(sIdx, exIdx);
+                    const isRemoved = removedExercises.has(key);
+                    const isCompleted = completedExercises[key];
 
-                  if (isRemoved && !isEditing) return null;
+                    if (isRemoved && !isEditing) return null;
 
-                  return (
-                    <li
-                      key={exIdx}
-                      className={`text-sm flex items-start gap-2 p-2 rounded transition-base ${
-                        isRemoved
-                          ? "bg-destructive/10 opacity-50"
-                          : isCompleted
-                          ? "bg-primary/10"
-                          : "bg-secondary/30"
-                      }`}
-                    >
-                      {isEditing && !isRemoved && (
-                        <Checkbox
-                          checked={isCompleted}
-                          onCheckedChange={() => toggleExercise(key)}
-                          className="mt-0.5"
-                        />
-                      )}
-                      <div className={`flex-1 ${isRemoved ? "line-through" : ""}`}>
-                        <span className="font-medium">{exercise.name}</span>
-                        <span className="text-muted-foreground"> — {exercise.details}</span>
-                      </div>
-                      {isEditing && (
-                        isRemoved ? (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6"
-                            onClick={() => undoRemove(key)}
+                    return (
+                      <li
+                        key={exIdx}
+                        className={`text-sm flex items-start gap-2 p-2 rounded transition-base ${
+                          isRemoved
+                            ? "bg-destructive/10 opacity-50"
+                            : isCompleted
+                            ? "bg-primary/10"
+                            : "bg-secondary/30"
+                        }`}
+                      >
+                        {isEditing && !isRemoved && (
+                          <Checkbox
+                            checked={isCompleted}
+                            onCheckedChange={() => toggleExercise(key)}
+                            className="mt-0.5"
+                          />
+                        )}
+                        {!isEditing && getCategoryIcon(exercise.category)}
+                        <div className={`flex-1 ${isRemoved ? "line-through" : ""}`}>
+                          <span className="font-medium">{exercise.name}</span>
+                          <span className="text-muted-foreground"> — {exercise.details}</span>
+                        </div>
+                        {!isEditing && (
+                          <a
+                            href={getFormGifLink(exercise.name)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-muted-foreground hover:text-primary transition-colors"
+                            title="View exercise form"
                           >
-                            <Check className="w-3 h-3" />
-                          </Button>
-                        ) : (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6 text-destructive hover:text-destructive"
-                            onClick={() => removeExercise(key)}
-                          >
-                            <X className="w-3 h-3" />
-                          </Button>
-                        )
-                      )}
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
+                            <ExternalLink className="w-3.5 h-3.5" />
+                          </a>
+                        )}
+                        {isEditing && (
+                          isRemoved ? (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6"
+                              onClick={() => undoRemove(key)}
+                            >
+                              <Check className="w-3 h-3" />
+                            </Button>
+                          ) : (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6 text-destructive hover:text-destructive"
+                              onClick={() => removeExercise(key)}
+                            >
+                              <X className="w-3 h-3" />
+                            </Button>
+                          )
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </CollapsibleContent>
+            </Collapsible>
           ))}
           
           {onLog && (
